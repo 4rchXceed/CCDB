@@ -1,0 +1,47 @@
+{
+    "schema": {
+        "current_sysid": 1,
+        "name": "item",
+        "indexes": [
+            {
+                "field": "id",
+                "type": "pk"
+            },
+            {
+                "field": "item_id",
+                "type": "unique"
+            },
+            {
+                "field": "id",
+                "type": "ai",
+                "start": 1,
+                "current": 1
+            }
+        ],
+        "fields": {
+            "id": {
+                "type": [
+                    "integer"
+                ],
+                "nullable": false,
+                "default": null
+            },
+            "item_id": {
+                "type": [
+                    "varchar",
+                    50
+                ],
+                "nullable": false,
+                "default": null
+            },
+            "item_count": {
+                "type": [
+                    "integer"
+                ],
+                "nullable": true,
+                "default": 0
+            }
+        }
+    },
+    "data": []
+}

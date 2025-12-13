@@ -10,9 +10,18 @@ while not stop do
     if line == nil or line == "exit" then
         stop = true
     else
-        result = runner.run(line, db)
+        local success, result = pcall(runner.run, line, db)
 
-        print(textutils.serialize(result))
+        print("---- RESULT ----")
+        if success then
+            if result == nil then
+                print("No result.")
+            else
+                print(textutils.serialize(result))
+            end
+        else
+            print("[ERROR]: " .. result)
+        end
     end
 end
 

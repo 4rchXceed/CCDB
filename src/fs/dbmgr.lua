@@ -15,6 +15,9 @@ function dbmgr.opendb(path)
         f = fs.open(fs.combine(db.path, db.tables[table_name]), "r")
         local table = textutils.unserialiseJSON(f.readAll())
         f.close()
+        if #table.data == 0 then
+            table.data = {} -- Else we have "attempt to mutate textutils.empty_json_array"
+        end
         return table
     end
 
