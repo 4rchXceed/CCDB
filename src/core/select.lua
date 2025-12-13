@@ -38,7 +38,15 @@ function selectcore.select(query_serialized, db)
         local filtered_row = {}
         for col, value in pairs(row) do
             if col ~= "?sysid?" then
-                filtered_row[col] = value
+                if not query_serialized.data.return_cols_all then
+                    for _, select_col in ipairs(query_serialized.data.return_cols) do
+                        if col == select_col then
+                            filtered_row[col] = value
+                        end
+                    end
+                else
+                    filtered_row[col] = value
+                end
             end
         end
         results[i] = filtered_row

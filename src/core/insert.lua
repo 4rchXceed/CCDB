@@ -50,7 +50,6 @@ function insertcore.insert(serialized_query, db)
         end
         new_row["?sysid?"] = current_table.schema.current_sysid
         current_table.schema.current_sysid = current_table.schema.current_sysid + 1
-        print("[DBG]: Inserting row:")
         table.insert(current_table.data, new_row)
     end
 

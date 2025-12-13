@@ -17,16 +17,22 @@ function deletecore.delete(query_serialized, db)
         results = current_table.data
     end
 
+    -- Because the results is linked to current_table.data, at the end of the function we will have 0 rows in results
+    local nbr_deleted = #results
+
+    local indices_to_delete = {}
     for _, row in ipairs(results) do
-        local i = 0
-        local stop = false
-        while not stop and i < #current_table.data do
-            i = i + 1
+        for i = 1, #current_table.data do
             local data = current_table.data[i]
             if data["?sysid?"] == row["?sysid?"] then
-                table.remove(current_table.data, i)
+                table.insert(indices_to_delete, i)
+                break
             end
         end
+    end
+
+    for i = #indices_to_delete, 1, -1 do
+        table.remove(current_table.data, indices_to_delete[i])
     end
 
     if not tablecheck.check_table(current_table) then
@@ -37,7 +43,7 @@ function deletecore.delete(query_serialized, db)
     db.savetable(query_serialized.from, current_table)
     return {
         success = true,
-        affected_rows = #results
+        affected_rows = nbr_deleted
     }
 end
 

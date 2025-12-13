@@ -1,3 +1,5 @@
+local parse_globals = require("src.parser.parse_globals")
+
 local wherecore = {}
 
 function wherecore.appy_where(conditions, current_table)
@@ -7,12 +9,15 @@ function wherecore.appy_where(conditions, current_table)
         local conditions_met = {}
 
         -- First evaluate all conditions, no matter the type
-
         for _, condition in ipairs(conditions) do
             local column_value = row[condition.column]
             local condition_value = condition.value
             local operator = condition.operator
             local condition_met = false
+
+            if condition_value == parse_globals.NULL then
+                condition_value = nil
+            end
 
             if operator == "=" then
                 condition_met = (column_value == condition_value)
@@ -27,6 +32,7 @@ function wherecore.appy_where(conditions, current_table)
             elseif operator == "<=" then
                 condition_met = (column_value <= condition_value)
             elseif operator == "%" then
+                ---@diagnostic disable-next-line: need-check-nil
                 local pattern = condition_value:gsub("%%", ".*"):gsub("_", ".")
                 condition_met = string.match(tostring(column_value), "^" .. pattern .. "$") ~= nil
             else
