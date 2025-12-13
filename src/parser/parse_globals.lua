@@ -1,7 +1,7 @@
 -- Patterns
 
 local parse_globals = {}
-parse_globals.SELECT_FROM = "^SELECT ([%a_,*%s*%*]+) FROM ([%a_]+)%s*.*;$"
+parse_globals.SELECT_FROM = "^SELECT (.+) FROM ([%a_]+)%s*.*;$"
 parse_globals.SELECT_FROM_ONLY = "^SELECT ([%a_,*%s*]+) FROM ([%a_]+)%s*"
 parse_globals.WHERE = "WHERE%s+(.*)%s*"
 parse_globals.WHERE_PATTERN = "^([%a_]+)%s*([<>!=%%]+)%s*(.*)$"
@@ -15,13 +15,15 @@ parse_globals.UPDATE_ONLY = "^UPDATE%s+([%a_]+)%s+SET%s+"
 parse_globals.UPDATE_PART = "^([%a_]+)%s*=%s*(.*)"
 parse_globals.DELETE = "^DELETE%s+FROM%s+([%a_]+)%s*(.*);$"
 parse_globals.QUERY_TYPE = "^([%a]+)%s"
+parse_globals.COLUMN_NAME = "^[%a_]+$"
 parse_globals.VALUE_TYPES = {
     STRING = "^'(.*)'$",
     FLOAT = "^(%-?%d+%.?%d*)$",
     INTEGER = "^(%-?%d+)$",
     BOOLEAN_TRUE = "^(TRUE)$",
     BOOLEAN_FALSE = "^(FALSE)$",
-    NULL = "^(NULL)$"
+    NULL = "^(NULL)$",
+    CALC = "^([%a_%^%d%.%+%-%*/%%%s]+)$"
 }
 
 parse_globals.NULL = {

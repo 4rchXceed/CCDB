@@ -3,9 +3,9 @@ local parser = {}
 local strutils = require("src.utils.strutils")
 local parser_globals = require("src.parser.parse_globals")
 
-function parser.analyze_value(value)
+function parser.analyze_value(value, noerrors)
     for name, pattern in pairs(parser_globals.VALUE_TYPES) do
-        _, _, captured = string.find(value, pattern)
+        local _, _, captured = string.find(value, pattern)
         if captured then
             if name == "STRING" then
                 return captured
@@ -19,8 +19,16 @@ function parser.analyze_value(value)
                 return false
             elseif name == "NULL" then
                 return parser_globals.NULL
+            elseif name == "CALC" then
+                return {
+                    type = "calculation",
+                    value = captured
+                }
             end
         end
+    end
+    if noerrors then
+        return nil
     end
     print("[ERROR]: Unable to analyze value: " .. value)
     return nil
@@ -44,7 +52,7 @@ function parser.where(query)
             condition = strutils.str_trim(condition)
             _, _, col, operator, value = string.find(condition, parser_globals.WHERE_PATTERN)
             if col and operator and value then
-                value = parser.analyze_value(strutils.str_trim(value))
+                value = parser.analyze_value(strutils.str_trim(value), false)
                 if not value then
                     print("[ERROR]: Unable to analyze value in WHERE condition: " .. condition)
                     return nil
@@ -123,7 +131,7 @@ function parser.parse_select(query)
     local query_filtred = strutils.str_trim(query):gsub("\n[^\n]*$", "")
     _, _, indexes, sqltable = string.find(query_filtred, parser_globals.SELECT_FROM)
     if indexes and sqltable then
-        indexes_clean = indexes:gsub("%s+", "")
+        indexes_clean = indexes
         returned = {
             type = "select",
             data = {},
@@ -133,8 +141,25 @@ function parser.parse_select(query)
             indexes_clean = ""
             returned["data"]["return_cols_all"] = true
         else
-            local indexes = strutils.strsplit(indexes_clean, ",")
-            returned["data"]["return_cols"] = indexes
+            local indexes = strutils.split_on_single_char(indexes_clean, ",")
+            local cleaned_indexes = {}
+            for k, col in pairs(indexes) do
+                if string.find(strutils.str_trim(col), parser_globals.COLUMN_NAME) then
+                    cleaned_indexes[k] = {
+                        type = "column",
+                        value = strutils.str_trim(col)
+                    }
+                else
+                    index = parser.analyze_value(strutils.str_trim(col), true)
+                    if index == nil then
+                        print("[ERROR]: Unable to analyze SELECT index: " .. col)
+                        return nil
+                    else
+                        cleaned_indexes[k] = index
+                    end
+                end
+            end
+            returned["data"]["return_cols"] = cleaned_indexes
         end
     else
         print("[ERROR]: Unable to parse SELECT indexes and FROM table.")
@@ -183,7 +208,11 @@ function parser.parse_insert(query)
                 local value_items_raw = strutils.split_on_single_char(strutils.str_trim(cleaned_value), ",")
                 local value_items = {}
                 for _, item in pairs(value_items_raw) do
-                    local analyzed_value = parser.analyze_value(strutils.str_trim(item))
+                    local analyzed_value = parser.analyze_value(strutils.str_trim(item), false)
+                    if analyzed_value.type == "calculation" then
+                        print("[ERROR]: Calculations are not supported in INSERT values: " .. item)
+                        return nil
+                    end
                     if analyzed_value == nil then
                         print("[ERROR]: Unable to analyze value in INSERT: " .. item)
                         return nil
@@ -221,7 +250,7 @@ function parser.parse_update(query)
         for k, part in pairs(set_parts_raw) do
             local _, _, col, value = string.find(strutils.str_trim(part), parser_globals.UPDATE_PART)
             if col and value then
-                local analyzed_value = parser.analyze_value(strutils.str_trim(value))
+                local analyzed_value = parser.analyze_value(strutils.str_trim(value), false)
                 if analyzed_value == nil then
                     print("[ERROR]: Unable to analyze value in UPDATE SET: " .. value)
                     return nil

@@ -1,4 +1,5 @@
 local wherecore = require("src.core.where")
+local safecalc = require("src.utils.safecalc")
 
 local selectcore = {}
 
@@ -40,13 +41,22 @@ function selectcore.select(query_serialized, db)
             if col ~= "?sysid?" then
                 if not query_serialized.data.return_cols_all then
                     for _, select_col in ipairs(query_serialized.data.return_cols) do
-                        if col == select_col then
+                        if col == select_col.value then
                             filtered_row[col] = value
                         end
                     end
                 else
                     filtered_row[col] = value
                 end
+            end
+        end
+        for _, select_col in ipairs(query_serialized.data.return_cols or {}) do
+            if type(select_col) ~= "table" or select_col.type ~= "column" then
+                value = select_col
+                if type(value) == "table" and value.type == "calculation" then
+                    value = safecalc.safe_calc(value.value, row)
+                end
+                filtered_row["col_" .. tostring(#filtered_row + 1)] = value -- AS not supported yet
             end
         end
         results[i] = filtered_row

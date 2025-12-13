@@ -1,4 +1,5 @@
 local parse_globals = require("src.parser.parse_globals")
+local safecalc = require("src.utils.safecalc")
 
 local wherecore = {}
 
@@ -12,6 +13,9 @@ function wherecore.appy_where(conditions, current_table)
         for _, condition in ipairs(conditions) do
             local column_value = row[condition.column]
             local condition_value = condition.value
+            if type(condition_value) == "table" and condition_value.type == "calculation" then
+                condition_value = safecalc.safe_calc(condition_value.value, row)
+            end
             local operator = condition.operator
             local condition_met = false
 

@@ -1,6 +1,7 @@
 local wherecore = require("src.core.where")
 local tablecheck = require("src.core.tablecheck")
 local parseglobals = require("src.parser.parse_globals")
+local safecalc = require("src.utils.safecalc")
 
 local updatecore = {}
 
@@ -24,6 +25,9 @@ function updatecore.update(query_serialized, db)
                 for _, set_clause in ipairs(query_serialized.data.set) do
                     local col_name = set_clause.column
                     local new_value = set_clause.value
+                    if type(new_value) == "table" and new_value.type == "calculation" then
+                        new_value = safecalc.safe_calc(new_value.value, row)
+                    end
                     for _, index in ipairs(current_table.schema.indexes) do
                         if index.field == col_name and index.type == "pk" then
                             print("[ERROR]: Cannot update PRIMARY KEY column '" .. col_name .. "'.")

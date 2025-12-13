@@ -80,10 +80,8 @@ function strutils.split_on_single_char(str, char)
     local in_double = false
 
     for k, token in pairs(strutils.totable(str)) do
-        if token:sub(1, 1) == "'" then in_single = not in_single end
-        if token:sub(1, 1) == '"' then in_double = not in_double end
-        if token:sub(-1) == "'" then in_single = not in_single end
-        if token:sub(-1) == '"' then in_double = not in_double end
+        if token == "'" then in_single = not in_single end
+        if token == '"' then in_double = not in_double end
 
         local inside_quotes = in_single or in_double
 
