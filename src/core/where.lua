@@ -1,5 +1,6 @@
 local parse_globals = require("src.parser.parse_globals")
 local safecalc = require("src.utils.safecalc")
+local errmgr = require("src.core.errmgr")
 
 local wherecore = {}
 
@@ -40,7 +41,7 @@ function wherecore.appy_where(conditions, current_table)
                 local pattern = condition_value:gsub("%%", ".*"):gsub("_", ".")
                 condition_met = string.match(tostring(column_value), "^" .. pattern .. "$") ~= nil
             else
-                print("[ERROR]: Unknown operator '" .. operator .. "' in WHERE clause.")
+                errmgr.error("Unknown operator '" .. operator .. "' in WHERE clause.")
             end
             table.insert(conditions_met, {
                 met = condition_met,

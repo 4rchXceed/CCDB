@@ -2,13 +2,14 @@ local wherecore = require("src.core.where")
 local tablecheck = require("src.core.tablecheck")
 local parseglobals = require("src.parser.parse_globals")
 local safecalc = require("src.utils.safecalc")
+local errmgr = require("src.core.errmgr")
 
 local updatecore = {}
 
 function updatecore.update(query_serialized, db)
     current_table = db.opentable(query_serialized.from)
     if current_table == nil then
-        print("[ERROR]: Table '" .. query_serialized.from .. "' does not exist.")
+        errmgr.error("Table '" .. query_serialized.from .. "' does not exist.")
         return false
     end
 
@@ -30,7 +31,7 @@ function updatecore.update(query_serialized, db)
                     end
                     for _, index in ipairs(current_table.schema.indexes) do
                         if index.field == col_name and index.type == "pk" then
-                            print("[ERROR]: Cannot update PRIMARY KEY column '" .. col_name .. "'.")
+                            errmgr.error("Cannot update PRIMARY KEY column '" .. col_name .. "'.")
                             return false
                         end
                     end
@@ -44,7 +45,7 @@ function updatecore.update(query_serialized, db)
     end
 
     if not tablecheck.check_table(current_table) then
-        print("[ERROR]: Update operation aborted due to table constraint violations (type, not null, etc.).")
+        errmgr.error("Update operation aborted due to table constraint violations (type, not null, etc.).")
         return false
     end
 

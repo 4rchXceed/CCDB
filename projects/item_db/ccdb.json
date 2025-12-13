@@ -1,0 +1,9 @@
+{
+    "tables": {
+        "item": "item.json",
+        "chest": "chest.json"
+    },
+    "login": {
+        "ArchXceed": "Pa$$w0rd"
+    }
+}

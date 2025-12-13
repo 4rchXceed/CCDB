@@ -1,6 +1,10 @@
 # Generate a setup, simpler to have 1 file for CC
 import json
 import os
+import time
+
+with open("src/.buildnumber", "w", encoding="utf-8") as f_src:
+    f_src.write(str(int(time.time())))
 
 
 def add_folder(folder: str, first=False) -> list:

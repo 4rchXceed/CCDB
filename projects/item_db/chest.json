@@ -1,0 +1,53 @@
+{
+    "schema": {
+        "current_sysid": 1,
+        "name": "chest",
+        "indexes": [
+            {
+                "field": "id",
+                "type": "pk"
+            },
+            {
+                "field": "id",
+                "type": "ai",
+                "start": 1,
+                "current": 1
+            },
+            {
+                "field": "move",
+                "type": "unique"
+            },
+            {
+                "field": "move",
+                "type": "ai",
+                "start": 1,
+                "current": 1
+            }
+        ],
+        "fields": {
+            "id": {
+                "type": [
+                    "integer"
+                ],
+                "nullable": false,
+                "default": null
+            },
+            "move": {
+                "type": [
+                    "integer"
+                ],
+                "nullable": false,
+                "default": null
+            },
+            "side": {
+                "type": [
+                    "varchar",
+                    10
+                ],
+                "nullable": false,
+                "default": "bottom"
+            }
+        }
+    },
+    "data": []
+}

@@ -3,12 +3,16 @@ local selectcore = require("src.core.select")
 local insertcore = require("src.core.insert")
 local updatecore = require("src.core.update")
 local deletecore = require("src.core.delete")
+local errmgr = require("src.core.errmgr")
 local runner = {}
 
+runner.time_start = 0
+
 function runner.run(query, db)
+    runner.time_start = os.clock()
     serialized_query = ccdb_parse.parse(query)
     if not serialized_query then
-        print("[ERROR]: Unable to parse query.")
+        errmgr.error("Unable to parse query.")
         return nil; -- I will add error processing later
     end
     if serialized_query.type == "select" then
@@ -20,9 +24,7 @@ function runner.run(query, db)
     elseif serialized_query.type == "delete" then
         return deletecore.delete(serialized_query, db)
     else
-        print("[DBG]: Serialized query:")
-        print(textutils.serialize(serialized_query))
-        print("[ERROR]: Query type '" .. serialized_query.type .. "' not supported yet.")
+        errmgr.error("Query type '" .. serialized_query.type .. "' not supported yet.")
         return nil; -- I will add error processing later
     end
 end

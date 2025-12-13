@@ -1,9 +1,12 @@
-local parser = {}
-
 local strutils = require("src.utils.strutils")
 local parser_globals = require("src.parser.parse_globals")
+local errmgr = require("src.core.errmgr")
 
+local parser = {}
 function parser.analyze_value(value, noerrors)
+    if value == "NULL" then
+        return parser_globals.NULL
+    end
     for name, pattern in pairs(parser_globals.VALUE_TYPES) do
         local _, _, captured = string.find(value, pattern)
         if captured then
@@ -17,8 +20,6 @@ function parser.analyze_value(value, noerrors)
                 return true
             elseif name == "BOOLEAN_FALSE" then
                 return false
-            elseif name == "NULL" then
-                return parser_globals.NULL
             elseif name == "CALC" then
                 return {
                     type = "calculation",
@@ -27,10 +28,9 @@ function parser.analyze_value(value, noerrors)
             end
         end
     end
-    if noerrors then
-        return nil
+    if not noerrors then
+        errmgr.error("Unable to analyze value: " .. value)
     end
-    print("[ERROR]: Unable to analyze value: " .. value)
     return nil
 end
 
@@ -54,7 +54,7 @@ function parser.where(query)
             if col and operator and value then
                 value = parser.analyze_value(strutils.str_trim(value), false)
                 if not value then
-                    print("[ERROR]: Unable to analyze value in WHERE condition: " .. condition)
+                    errmgr.error("Unable to analyze value in WHERE condition: " .. condition)
                     return nil
                 end
                 conditions[k] = {
@@ -64,7 +64,7 @@ function parser.where(query)
                     value = value
                 }
             else
-                print("[ERROR]: Invalid WHERE condition: " .. condition)
+                errmgr.error("Invalid WHERE condition: " .. condition)
                 return nil
             end
         end
@@ -95,7 +95,7 @@ function parser.end_section(query_end)
                     order = "ASC"
                 else
                     if order ~= "ASC" and order ~= "DESC" and order ~= "" then
-                        print("[ERROR]: Invalid ORDER BY order: " .. order)
+                        errmgr.error("Invalid ORDER BY order: " .. order)
                         return nil
                     end
                     if order == "" then
@@ -108,7 +108,7 @@ function parser.end_section(query_end)
                     order = order
                 }
             else
-                print("[ERROR]: Invalid ORDER BY part: " .. column)
+                errmgr.error("Invalid ORDER BY part: " .. column)
             end
         end
     end
@@ -116,7 +116,7 @@ function parser.end_section(query_end)
     if limit then
         limit_number = tonumber(strutils.str_trim(limit))
         if not limit_number then
-            print("[ERROR]: Invalid LIMIT number: " .. limit)
+            errmgr.error("Invalid LIMIT number: " .. limit)
             return nil
         end
     end
@@ -152,7 +152,7 @@ function parser.parse_select(query)
                 else
                     index = parser.analyze_value(strutils.str_trim(col), true)
                     if index == nil then
-                        print("[ERROR]: Unable to analyze SELECT index: " .. col)
+                        errmgr.error("Unable to analyze SELECT index: " .. col)
                         return nil
                     else
                         cleaned_indexes[k] = index
@@ -162,7 +162,7 @@ function parser.parse_select(query)
             returned["data"]["return_cols"] = cleaned_indexes
         end
     else
-        print("[ERROR]: Unable to parse SELECT indexes and FROM table.")
+        errmgr.error("Unable to parse SELECT indexes and FROM table.")
         return nil
     end
     local query_cleaned = query_filtred:gsub(parser_globals.SELECT_FROM_ONLY, ""):gsub(";$", ""); -- Remove processed parts and semicolon
@@ -175,7 +175,7 @@ function parser.parse_select(query)
     if string.find(where_clause, parser_globals.WHERE) ~= nil then
         local where_parsed = parser.where(where_clause)
         if not where_parsed then
-            print("[ERROR]: Unable to parse WHERE clause.")
+            errmgr.error("Unable to parse WHERE clause.")
             return nil
         end
         returned["data"]["where"] = where_parsed
@@ -186,7 +186,7 @@ function parser.parse_select(query)
     query_cleaned = strutils.str_trim(query_cleaned)
     local ending_parsed = parser.end_section(query_cleaned)
     if not ending_parsed then
-        print("[ERROR]: Unable to parse END section.")
+        errmgr.error("Unable to parse END section.")
         return nil
     end
     returned["data"]["limit"] = ending_parsed["limit"]
@@ -209,12 +209,12 @@ function parser.parse_insert(query)
                 local value_items = {}
                 for _, item in pairs(value_items_raw) do
                     local analyzed_value = parser.analyze_value(strutils.str_trim(item), false)
-                    if analyzed_value.type == "calculation" then
-                        print("[ERROR]: Calculations are not supported in INSERT values: " .. item)
+                    if type(analyzed_value) == "table" and analyzed_value.type == "calculation" then
+                        errmgr.error("Calculations are not supported in INSERT values: " .. item)
                         return nil
                     end
                     if analyzed_value == nil then
-                        print("[ERROR]: Unable to analyze value in INSERT: " .. item)
+                        errmgr.error("Unable to analyze value in INSERT: " .. item)
                         return nil
                     end
                     table.insert(value_items, analyzed_value)
@@ -252,7 +252,7 @@ function parser.parse_update(query)
             if col and value then
                 local analyzed_value = parser.analyze_value(strutils.str_trim(value), false)
                 if analyzed_value == nil then
-                    print("[ERROR]: Unable to analyze value in UPDATE SET: " .. value)
+                    errmgr.error("Unable to analyze value in UPDATE SET: " .. value)
                     return nil
                 end
                 set_parts[k] = {
@@ -260,7 +260,7 @@ function parser.parse_update(query)
                     value = analyzed_value
                 }
             else
-                print("[ERROR]: Invalid UPDATE SET part: " .. part)
+                errmgr.error("Invalid UPDATE SET part: " .. part)
                 return nil
             end
         end
@@ -272,7 +272,7 @@ function parser.parse_update(query)
         if where_clause then
             where_parsed = parser.where("WHERE " .. where_clause)
             if not where_parsed then
-                print("[ERROR]: Unable to parse WHERE clause in UPDATE.")
+                errmgr.error("Unable to parse WHERE clause in UPDATE.")
                 return nil
             end
         end
@@ -295,7 +295,7 @@ function parser.parse_delete(query)
     if sqltable and where then
         local where_parsed = parser.where(where)
         if not where_parsed then
-            print("[ERROR]: Unable to parse WHERE clause in DELETE.")
+            errmgr.error("Unable to parse WHERE clause in DELETE.")
             return nil
         end
         returned = {
@@ -320,7 +320,7 @@ function parser.parse(query)
     elseif query_type == "DELETE" then
         return parser.parse_delete(query)
     else
-        print("[ERROR]: Unknown query type.")
+        errmgr.error("Unknown query type.")
         return nil
     end
 end

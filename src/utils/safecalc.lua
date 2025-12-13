@@ -1,3 +1,5 @@
+local errmgr = require("src.core.errmgr")
+
 local safecalc = {}
 
 function safecalc.safe_calc(expr, kv_table)
@@ -9,17 +11,17 @@ function safecalc.safe_calc(expr, kv_table)
     str = string.gsub(str, "([%d%.]+)([%+%-%*/%%])", "%1 %2")
     str = string.gsub(str, "([%+%%-%*/%%])([%d%.]+)", "%1 %2")
     if string.find(str, "[^%d%.%+%-%*/%% ]") then
-        print("[ERROR]: Unsafe characters detected in expression '" .. expr .. "'.")
+        errmgr.error("Unsafe characters detected in expression '" .. expr .. "'.")
         return nil
     end
     local func, err = load("return " .. str)
     if not func then
-        print("[ERROR]: Error compiling expression '" .. expr .. "': " .. err)
+        errmgr.error("Error compiling expression '" .. expr .. "': " .. err)
         return nil
     end
     local success, result = pcall(func)
     if not success then
-        print("[ERROR]: Error evaluating expression '" .. expr .. "': " .. result)
+        errmgr.error("Error evaluating expression '" .. expr .. "': " .. result)
         return nil
     end
     return result

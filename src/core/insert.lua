@@ -1,5 +1,6 @@
 local tablecheck = require("src.core.tablecheck")
 local parseglobals = require("src.parser.parse_globals")
+local errmgr = require("src.core.errmgr")
 
 local insertcore = {}
 
@@ -7,7 +8,7 @@ function insertcore.insert(serialized_query, db)
     local table_name = serialized_query.from
     local current_table = db.opentable(serialized_query.from)
     if not current_table then
-        print("[ERROR]: Table '" .. table_name .. "' does not exist.")
+        errmgr.error("Table '" .. table_name .. "' does not exist.")
         return nil
     end
 
@@ -54,7 +55,7 @@ function insertcore.insert(serialized_query, db)
     end
 
     if not tablecheck.check_table(current_table) then
-        print("[ERROR]: Table '" ..
+        errmgr.error("Table '" ..
             table_name .. "' integrity check failed after INSERT operation. (Rolling back changes.)")
         return nil
     end

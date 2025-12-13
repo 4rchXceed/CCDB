@@ -4,7 +4,7 @@
         "item": "item.json"
     },
     "login": {
-        "username": "admin",
-        "password": "admin"
+        "admin": "adminpass",
+        "allowed": "allowedpass"
     }
 }

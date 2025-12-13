@@ -22,3 +22,5 @@ UPDATE user SET username = NULL WHERE id = 2;
 
 -- Delete
 DELETE FROM user WHERE id = 1;
+
+OPEN(dbtest); -- Syntax to open a database in CCDB (CLI)

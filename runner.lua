@@ -1,7 +1,16 @@
-root = "/"
-root_runtime = "src"
-JSON = %JSON%
-files = textutils.unserialiseJSON(JSON)
+
+local is_setup = arg[1] == "setup"
+
+local root = "/"
+local root_runtime = "src"
+local JSON = %JSON%
+
+if not is_setup then
+    print("[RUNNER]: Starting CCDB...")
+    require(root_runtime .. "." .. "main")
+    return
+end
+local files = textutils.unserialiseJSON(JSON)
 
 for key, val in pairs(files) do
     if val["t"] == 2 then
@@ -15,5 +24,4 @@ for key, val in pairs(files) do
     end
 end
 
-
-require(root_runtime .. "." .. "main")
+print("[SETUP]: Setup complete. You can now run CCDB without the 'setup' argument.")

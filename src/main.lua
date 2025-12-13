@@ -1,34 +1,33 @@
-local runner = require("src.core.run")
-local dbmgr = require("src.fs.dbmgr")
+local stdinmgr = require("src.stdinmgr")
+local rednet_mod = require("src.utils.rednet")
+local netmgr = require("src.netmgr")
 
-db = dbmgr.opendb("src/examples/db01")
+local rednet_module_loc = ""
 
-stop = false
-
-while not stop do
-    line = io.read("l");
-    if line == nil or line == "exit" then
-        stop = true
-    else
-        local success, result = pcall(runner.run, line, db)
-
-        print("---- RESULT ----")
-        if success then
-            if result == nil then
-                print("No result.")
-            else
-                print(textutils.serialize(result))
-            end
-        else
-            print("[ERROR]: " .. result)
-        end
-    end
+if fs.exists("cfg/rednet_module") then
+    local f = fs.open("cfg/rednet_module", "r")
+    rednet_module_loc = f.readLine()
+    f.close()
+else
+    rednet_module_loc = "top"
+    print("No rednet module configured, defaulting to '" .. rednet_module_loc .. "'")
+    local f = fs.open("cfg/rednet_module", "w")
+    f.writeLine(rednet_module_loc)
+    f.close()
 end
 
--- local ccdb_parse = require("src.parser.parser")
--- local r = ccdb_parse.parse(
---     "SELECT * FROM user WHERE name = 'Lyam Zambaz' OR city = 'Paris' AND age >= 18 ORDER BY age LIMIT 2;")
--- print(textutils.serialize(r))
--- f = fs.open("debug_parse.txt", "w")
--- f.write(textutils.serialize(r))
--- f.close()
+rednet_mod.rednet_setup(rednet_module_loc)
+
+
+rednet_mod.server(
+    netmgr.get_conn,
+    stdinmgr.wait_and_run
+)
+
+-- stop = false
+
+-- while not stop do
+--     io.write("ccdb> ")
+--     line = io.read("l")
+--     stop = stdinmgr.wait_and_run(line)
+-- end

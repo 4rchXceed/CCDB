@@ -1,12 +1,13 @@
 local wherecore = require("src.core.where")
 local tablecheck = require("src.core.tablecheck")
+local errmgr = require("src.core.errmgr")
 
 local deletecore = {}
 
 function deletecore.delete(query_serialized, db)
     current_table = db.opentable(query_serialized.from)
     if current_table == nil then
-        print("[ERROR]: Table '" .. query_serialized.from .. "' does not exist.")
+        errmgr.error("Table '" .. query_serialized.from .. "' does not exist.")
         return false
     end
 
@@ -36,7 +37,7 @@ function deletecore.delete(query_serialized, db)
     end
 
     if not tablecheck.check_table(current_table) then
-        print("[ERROR]: Delete operation aborted due to table constraint violations (type, not null, etc.).")
+        errmgr.error("Delete operation aborted due to table constraint violations (type, not null, etc.).")
         return false
     end
 
