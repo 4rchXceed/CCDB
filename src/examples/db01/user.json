@@ -1,0 +1,70 @@
+{
+    "schema": {
+        "current_sysid": 3,
+        "name": "user",
+        "indexes": [
+            {
+                "field": "id",
+                "type": "pk"
+            },
+            {
+                "field": "username",
+                "type": "unique"
+            },
+            {
+                "field": "id",
+                "type": "ai",
+                "start": 1,
+                "current": 3
+            }
+        ],
+        "fields": {
+            "id": {
+                "type": [
+                    "integer"
+                ],
+                "nullable": false,
+                "default": null
+            },
+            "username": {
+                "type": [
+                    "varchar",
+                    20
+                ],
+                "nullable": false,
+                "default": null
+            },
+            "email": {
+                "type": [
+                    "varchar",
+                    50
+                ],
+                "nullable": false,
+                "default": null
+            },
+            "age": {
+                "type": [
+                    "integer"
+                ],
+                "nullable": true,
+                "default": null
+            }
+        }
+    },
+    "data": [
+        {
+            "?sysid?": 1,
+            "id": 1,
+            "username": "alice",
+            "email": "alice@example.com",
+            "age": 30
+        },
+        {
+            "?sysid?": 2,
+            "id": 2,
+            "username": "Jean-Luc",
+            "email": "jeanluc@example.com",
+            "age": 45
+        }
+    ]
+}

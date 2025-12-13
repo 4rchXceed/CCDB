@@ -1,0 +1,9 @@
+{
+    "tables": {
+        "user": "user.json"
+    },
+    "login": {
+        "username": "admin",
+        "password": "admin"
+    }
+}
