@@ -42,6 +42,7 @@ function errmgr.generate_report(error)
     for i, message in ipairs(err) do
         report = report .. "[" .. i .. "] " .. message .. "\n"
     end
+    err = {}
     report = report .. "[" .. (#err + 1) .. "] " .. tostring(error) .. "\n"
     report = report .. "Environment Info:\n"
     report = report .. "CCDB Version: " .. globals.VERSION .. "\n"
