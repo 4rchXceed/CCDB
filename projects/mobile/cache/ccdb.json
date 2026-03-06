@@ -1,0 +1,8 @@
+{
+    "tables": {
+        "item": "item.json"
+    },
+    "login": {
+        "root": "root"
+    }
+}

@@ -1,0 +1,25 @@
+site_name: CCDB-Docs
+
+repo_url: https://github.com/4rchXceed/CCDB
+
+nav:
+  - Home: index.md
+  - App Usage: app.md
+  - Queries: queries.md
+  - Minecraft-specific usage: minecraft.md
+  - Configuration: config.md
+  - Dev tools: tools.md
+  - Lua API:
+      - Client: lua_api/client.md
+      - Server: lua_api/server.md
+  - Queries Specs:
+      - Insert: queries/insert.md
+      - Update: queries/update.md
+      - Delete: queries/delete.md
+      - Select: queries/select.md
+      - Where conditions: queries/where.md
+      - Values: queries/values.md
+  - Schema:
+      - Tables: schema/table.md
+      - Database: schema/database.md
+theme: readthedocs
